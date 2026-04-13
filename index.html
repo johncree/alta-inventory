@@ -674,8 +674,12 @@ function downloadCSV() {
   const blob = new Blob([buildCSV()], { type: 'text/csv' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = csvFilename(); a.click();
-  URL.revokeObjectURL(url);
+  a.href = url;
+  a.download = csvFilename();
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
 }
 
 function newBatch() {
