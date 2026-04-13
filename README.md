@@ -21,7 +21,7 @@ Fill in the session details on the setup screen:
 | Field | Example | Notes |
 |---|---|---|
 | Site code | `FHS` | Short identifier, used in camera names |
-| Site name | `Fenton Community High School District 99` | Full site name, appears in CSV |
+| Site name | `Fenton Community High School District 100` | Full site name, appears in CSV |
 | Device group | `Fenton High School` | Group name for Alta Access |
 | Number of cameras | `24` | Total expected cameras at this site |
 
