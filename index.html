@@ -162,7 +162,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
   </div>
 </div>
 
-<script src="https://unpkg.com/@zxing/library@0.19.2/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
 
@@ -171,7 +171,6 @@ let scanningIndex = null;
 let scanCooldown = false;
 let activeStream = null;
 let scanLoopId = null;
-let codeReader = null;
 let frameCount = 0;
 
 function setStatus(main, debug) {
@@ -275,7 +274,6 @@ async function openScanner(index) {
     const s = track.getSettings();
     setStatus('Ready — point at QR code', `${s.width || '?'}x${s.height || '?'} | frames: 0`);
 
-    codeReader = new ZXing.BrowserMultiFormatReader();
     startScanLoop(video);
 
   } catch (err) {
@@ -303,11 +301,9 @@ function startScanLoop(video) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       try {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const lum = new ZXing.RGBLuminanceSource(imageData.data, canvas.width, canvas.height);
-        const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-        const result = codeReader.decodeBitmap(bmp);
+        const result = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: 'dontInvert' });
         if (result) {
-          const raw = result.getText();
+          const raw = result.data;
           const key = extractAltaKey(raw);
           if (key) {
             handleScanResult(key);
@@ -317,8 +313,8 @@ function startScanLoop(video) {
           }
         }
       } catch (e) {
-        if (e && e.name !== 'NotFoundException' && frameCount % 60 === 0) {
-          setStatus('Decode error', e.name + ': ' + (e.message || '').slice(0, 40));
+        if (frameCount % 60 === 0) {
+          setStatus('Decode error', (e.message || String(e)).slice(0, 60));
         }
       }
     }
@@ -348,7 +344,6 @@ async function closeScanner() {
   if (scanLoopId) { cancelAnimationFrame(scanLoopId); scanLoopId = null; }
   if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
   document.getElementById('preview').srcObject = null;
-  codeReader = null;
   frameCount = 0;
 }
 
