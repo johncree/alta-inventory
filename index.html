@@ -69,6 +69,11 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .scan-success-flash{position:absolute;inset:0;background:rgba(99,153,34,0.4);display:none;pointer-events:none;z-index:10}
 .scanner-status{padding:10px 16px;color:#fff;text-align:center;font-size:13px;background:rgba(0,0,0,0.75);min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;word-break:break-all}
 .scanner-footer{background:rgba(0,0,0,0.8);padding:12px 16px}
+.post-scan-btns{display:none;gap:8px;margin-bottom:10px}
+.post-scan-btns.visible{display:flex}
+.post-scan-btns button{flex:1;height:44px;border-radius:var(--radius-sm);border:none;font-size:14px;font-weight:500;cursor:pointer}
+.post-scan-next{background:var(--blue-mid);color:#fff}
+.post-scan-done{background:#333;color:#fff}
 .manual-btn{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
 .manual-input-row{display:none;gap:8px}
 .manual-input-row.visible{display:flex}
@@ -84,6 +89,13 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .stat-lbl{font-size:12px;color:var(--text-muted);margin-top:2px}
 .stat-blue{color:var(--blue-mid)}
 .stat-green{color:var(--green-mid)}
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+.divider span{font-size:13px;color:var(--text-muted);white-space:nowrap}
+.divider::before,.divider::after{content:'';flex:1;height:0.5px;background:var(--border)}
+.import-area{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:20px 16px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative}
+.import-area:hover{border-color:var(--blue-mid)}
+.import-area p{font-size:14px;color:var(--text-muted);margin-top:4px}
+.import-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 </style>
 </head>
 <body>
@@ -103,6 +115,13 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     </div>
     <div id="setup-error" style="color:var(--red);font-size:13px;margin-bottom:10px;display:none;padding:0 4px;"></div>
     <button class="btn btn-primary" onclick="startSession()">Start scanning session</button>
+    <div class="divider"><span>or</span></div>
+    <div class="import-area" id="import-area">
+      <input type="file" accept=".csv" onchange="importCSV(this)">
+      <strong style="font-size:15px;">Resume from CSV</strong>
+      <p>Pick a previously exported CSV to continue scanning</p>
+    </div>
+    <div id="import-error" style="color:var(--red);font-size:13px;margin-top:10px;display:none;padding:0 4px;"></div>
   </div>
 </div>
 
@@ -119,7 +138,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     </div>
     <div class="card" style="padding:12px 16px;"><ul class="camera-list" id="camera-list"></ul></div>
     <button class="btn btn-success" onclick="goToReview()" id="btn-review" style="display:none">Review &amp; export CSV</button>
-    <button class="btn btn-outline" onclick="goToReview()">Review progress</button>
+    <button class="btn btn-outline" onclick="goToReview()">Review &amp; export CSV</button>
   </div>
 </div>
 
@@ -154,7 +173,11 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     <span id="status-debug" style="font-size:11px;opacity:0.6;font-family:monospace;"></span>
   </div>
   <div class="scanner-footer">
-    <button class="manual-btn" onclick="toggleManual()">Enter key manually instead</button>
+    <div class="post-scan-btns" id="post-scan-btns">
+      <button class="post-scan-next" id="post-scan-next" onclick="goNextCamera()">Next camera</button>
+      <button class="post-scan-done" onclick="closeScanner()">Back to list</button>
+    </div>
+    <button class="manual-btn" id="manual-toggle-btn" onclick="toggleManual()">Enter key manually instead</button>
     <div class="manual-input-row" id="manual-row">
       <input type="text" id="manual-key" placeholder="Paste URL or XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false">
       <button onclick="submitManual()">Save</button>
@@ -168,6 +191,7 @@ const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
 
 let session = null;
 let scanningIndex = null;
+let nextIndex = null;
 let scanCooldown = false;
 let activeStream = null;
 let scanLoopId = null;
@@ -213,6 +237,67 @@ function startSession() {
   showScreen('screen-scan');
 }
 
+// Parse a CSV row respecting quoted fields
+function parseCSVRow(line) {
+  const cols = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      cols.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  cols.push(cur);
+  return cols;
+}
+
+function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const err = document.getElementById('import-error');
+  err.style.display = 'none';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) throw new Error('CSV appears empty.');
+      const header = parseCSVRow(lines[0]).map(h => h.trim());
+      const nameIdx   = header.findIndex(h => h === 'Name');
+      const keyIdx    = header.findIndex(h => h === 'Alta Key');
+      const siteIdx   = header.findIndex(h => h === 'Site');
+      const groupIdx  = header.findIndex(h => h === 'Device Group');
+      if (nameIdx === -1 || keyIdx === -1) throw new Error('Missing required columns (Name, Alta Key).');
+      const cameras = [];
+      let site = '', group = '';
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVRow(lines[i]);
+        const name    = (cols[nameIdx]  || '').trim();
+        const altaKey = (cols[keyIdx]   || '').trim();
+        if (!name) continue;
+        if (siteIdx  !== -1 && !site)  site  = (cols[siteIdx]  || '').trim();
+        if (groupIdx !== -1 && !group) group = (cols[groupIdx] || '').trim();
+        cameras.push({ name, altaKey, scanned: altaKey !== '' });
+      }
+      if (!cameras.length) throw new Error('No camera rows found.');
+      // Infer site code from first camera name (everything before last -C##)
+      const siteCode = cameras[0].name.replace(/-C\d+$/, '');
+      session = { siteCode, site, group, count: cameras.length, cameras };
+      renderScanScreen();
+      showScreen('screen-scan');
+    } catch (ex) {
+      err.textContent = 'Import failed: ' + ex.message;
+      err.style.display = 'block';
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
 function renderScanScreen() {
   const { siteCode, site, group, cameras } = session;
   const done = cameras.filter(c => c.scanned).length;
@@ -243,12 +328,15 @@ function renderScanScreen() {
 
 async function openScanner(index) {
   scanningIndex = index;
+  nextIndex = null;
   scanCooldown = false;
   frameCount = 0;
   const cam = session.cameras[index];
   document.getElementById('scanner-title').textContent = `Scanning ${cam.name}`;
   document.getElementById('scanner-badge').textContent = `${index + 1} of ${session.cameras.length}`;
   setStatus('Starting camera...', '');
+  document.getElementById('post-scan-btns').classList.remove('visible');
+  document.getElementById('manual-toggle-btn').style.display = 'block';
   document.getElementById('manual-row').classList.remove('visible');
   document.getElementById('manual-key').value = '';
   document.getElementById('scan-flash').style.display = 'none';
@@ -331,12 +419,23 @@ function handleScanResult(key) {
   session.cameras[scanningIndex].scanned = true;
   setStatus('Captured: ' + key, '');
   document.getElementById('scan-flash').style.display = 'block';
-  const next = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned);
-  setTimeout(async () => {
-    await closeScanner();
-    renderScanScreen();
-    if (next !== -1) setTimeout(() => openScanner(next), 400);
-  }, 900);
+
+  // Find next unscanned camera
+  nextIndex = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned);
+
+  // Show post-scan buttons, hide manual entry
+  const nextBtn = document.getElementById('post-scan-next');
+  nextBtn.style.display = nextIndex !== -1 ? '' : 'none';
+  document.getElementById('post-scan-btns').classList.add('visible');
+  document.getElementById('manual-toggle-btn').style.display = 'none';
+  document.getElementById('manual-row').classList.remove('visible');
+}
+
+async function goNextCamera() {
+  const idx = nextIndex;
+  await closeScanner();
+  renderScanScreen();
+  if (idx !== -1) openScanner(idx);
 }
 
 async function closeScanner() {
@@ -345,6 +444,7 @@ async function closeScanner() {
   if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
   document.getElementById('preview').srcObject = null;
   frameCount = 0;
+  renderScanScreen();
 }
 
 function toggleManual() {
@@ -384,7 +484,7 @@ function goToReview() {
 function buildCSV() {
   const headers = ['Name','IP Address / Alta Key','Alta Key','Port','Site','Device Group','Configuration Profile','Protocol','Encryption','Connected to','Labels','GPS Coordinates'];
   const escape = v => `"${String(v).replace(/"/g,'""')}"`;
-  const rows = session.cameras.map(c => [c.name, c.altaKey, c.altaKey, '', '', session.site, session.group, '', '', '', '', '']);
+  const rows = session.cameras.map(c => [c.name, c.altaKey, c.altaKey, '', session.site, session.group, '', '', '', '', '', '']);
   return [headers, ...rows].map(r => r.map(escape).join(',')).join('\r\n');
 }
 
