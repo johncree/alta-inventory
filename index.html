@@ -46,49 +46,68 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .btn+.btn{margin-top:10px}
 .progress-bar-wrap{background:var(--gray-light);border-radius:99px;height:6px;margin:10px 0 4px;overflow:hidden}
 .progress-bar-fill{height:100%;background:var(--blue-mid);border-radius:99px;transition:width .3s ease}
+/* Camera list */
 .camera-list{list-style:none}
 .camera-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--border)}
 .camera-item:last-child{border-bottom:none}
 .cam-status{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0}
 .cam-status.done{background:var(--green-light);color:var(--green)}
 .cam-status.pending{background:var(--gray-light);color:var(--gray)}
+.cam-status.skipped{background:var(--amber-light);color:var(--amber)}
 .cam-info{flex:1;min-width:0}
-.cam-name{font-size:15px;font-weight:500}
+.cam-name-wrap{display:flex;align-items:center;gap:6px}
+.cam-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cam-edit-btn{background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:0;line-height:1;opacity:0.5;flex-shrink:0}
+.cam-edit-btn:active{opacity:1}
+.cam-name-edit{display:none;gap:6px;align-items:center;margin-bottom:4px}
+.cam-name-edit.visible{display:flex}
+.cam-name-edit input{flex:1;height:32px;border:0.5px solid var(--blue-mid);border-radius:6px;background:var(--page-bg);color:var(--text);font-size:14px;padding:0 8px;outline:none;min-width:0;margin:0}
+.cam-name-edit button{height:32px;padding:0 10px;border-radius:6px;border:none;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.cam-name-edit .save-btn{background:var(--blue-mid);color:#fff}
+.cam-name-edit .cancel-btn{background:var(--gray-light);color:var(--text)}
 .cam-key{font-size:12px;color:var(--text-muted);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cam-scan-btn{background:var(--blue-light);color:var(--blue);border:none;border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.cam-scan-btn{background:var(--blue-light);color:var(--blue);border:none;border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .cam-scan-btn:active{opacity:.7}
+/* Stats */
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:var(--surface);border-radius:var(--radius-sm);border:0.5px solid var(--border);padding:10px 8px;text-align:center}
+.stat-num{font-size:26px;font-weight:500}
+.stat-lbl{font-size:11px;color:var(--text-muted);margin-top:2px}
+.stat-blue{color:var(--blue-mid)}
+.stat-green{color:var(--green-mid)}
+.stat-amber{color:var(--amber)}
+/* Scanner modal */
 .scanner-modal{display:none;position:fixed;inset:0;background:#000;z-index:100;flex-direction:column}
 .scanner-modal.open{display:flex}
-.scanner-header{padding:16px;color:#fff;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.7)}
+.scanner-header{padding:12px 16px;color:#fff;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.7)}
 .scanner-header h2{font-size:17px;font-weight:500;flex:1}
 .scanner-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:0 4px;line-height:1}
+#torch-btn{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;opacity:0.45;display:none}
+#torch-btn.on{opacity:1}
 #video-container{flex:1;position:relative;overflow:hidden;background:#000}
 #preview{width:100%;height:100%;object-fit:cover;display:block}
 .scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .scan-box{width:220px;height:220px;border:2px solid rgba(55,138,221,0.8);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)}
 .scan-success-flash{position:absolute;inset:0;background:rgba(99,153,34,0.4);display:none;pointer-events:none;z-index:10}
-.scanner-status{padding:10px 16px;color:#fff;text-align:center;font-size:13px;background:rgba(0,0,0,0.75);min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;word-break:break-all}
+.scanner-status{padding:10px 16px;color:#fff;text-align:center;font-size:13px;background:rgba(0,0,0,0.75);min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;word-break:break-all}
 .scanner-footer{background:rgba(0,0,0,0.8);padding:12px 16px}
 .post-scan-btns{display:none;gap:8px;margin-bottom:10px}
 .post-scan-btns.visible{display:flex}
 .post-scan-btns button{flex:1;height:44px;border-radius:var(--radius-sm);border:none;font-size:14px;font-weight:500;cursor:pointer}
 .post-scan-next{background:var(--blue-mid);color:#fff}
-.post-scan-done{background:#333;color:#fff}
-.manual-btn{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
+.post-scan-list{background:#333;color:#fff}
+.footer-link{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
+.footer-link.skip-link{color:#e8a87a}
 .manual-input-row{display:none;gap:8px}
 .manual-input-row.visible{display:flex}
 .manual-input-row input{flex:1;height:44px;border-radius:var(--radius-sm);border:0.5px solid #555;background:#222;color:#fff;padding:0 12px;font-size:16px;outline:none;margin:0}
 .manual-input-row button{height:44px;padding:0 16px;border-radius:var(--radius-sm);background:var(--blue-mid);color:#fff;border:none;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+/* Review */
 .summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:14px}
 .summary-row:last-child{border-bottom:none}
 .summary-label{color:var(--text-muted)}
 .summary-value{font-weight:500}
-.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.stat-card{background:var(--surface);border-radius:var(--radius-sm);border:0.5px solid var(--border);padding:12px 14px;text-align:center}
-.stat-num{font-size:28px;font-weight:500}
-.stat-lbl{font-size:12px;color:var(--text-muted);margin-top:2px}
-.stat-blue{color:var(--blue-mid)}
-.stat-green{color:var(--green-mid)}
+/* Setup extras */
 .divider{display:flex;align-items:center;gap:10px;margin:16px 0}
 .divider span{font-size:13px;color:var(--text-muted);white-space:nowrap}
 .divider::before,.divider::after{content:'';flex:1;height:0.5px;background:var(--border)}
@@ -96,6 +115,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .import-area:hover{border-color:var(--blue-mid)}
 .import-area p{font-size:14px;color:var(--text-muted);margin-top:4px}
 .import-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.restore-card{background:var(--blue-light);border-color:rgba(55,138,221,0.3);margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -103,6 +123,12 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 <div id="screen-setup" class="screen active">
   <header><h1>Alta Camera Inventory</h1><p>New batch setup</p></header>
   <div class="content">
+    <div id="restore-banner" class="card restore-card" style="display:none">
+      <p style="font-size:13px;font-weight:500;color:var(--blue)">Session in progress</p>
+      <p style="font-size:13px;color:var(--blue-mid);margin:4px 0 12px" id="restore-sub"></p>
+      <button class="btn btn-primary" style="height:40px;font-size:14px" onclick="restoreSession()">Resume session</button>
+      <button class="btn btn-outline" style="height:36px;font-size:13px;margin-top:8px" onclick="dismissRestore()">Dismiss &amp; start new</button>
+    </div>
     <div class="card">
       <label>Site code</label>
       <input type="text" id="setup-sitecode" placeholder="e.g. OAKW" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -116,7 +142,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     <div id="setup-error" style="color:var(--red);font-size:13px;margin-bottom:10px;display:none;padding:0 4px;"></div>
     <button class="btn btn-primary" onclick="startSession()">Start scanning session</button>
     <div class="divider"><span>or</span></div>
-    <div class="import-area" id="import-area">
+    <div class="import-area">
       <input type="file" accept=".csv" onchange="importCSV(this)">
       <strong style="font-size:15px;">Resume from CSV</strong>
       <p>Pick a previously exported CSV to continue scanning</p>
@@ -130,6 +156,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
   <div class="content">
     <div class="stats-row">
       <div class="stat-card"><div class="stat-num stat-green" id="stat-done">0</div><div class="stat-lbl">Scanned</div></div>
+      <div class="stat-card"><div class="stat-num stat-amber" id="stat-skip">0</div><div class="stat-lbl">Skipped</div></div>
       <div class="stat-card"><div class="stat-num stat-blue" id="stat-remain">0</div><div class="stat-lbl">Remaining</div></div>
     </div>
     <div class="card" style="margin-bottom:8px;">
@@ -147,7 +174,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
   <div class="content">
     <div id="review-incomplete-warn" style="display:none;background:var(--amber-light);border:0.5px solid var(--amber);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;">
       <p style="font-size:13px;color:var(--amber);font-weight:500;">Some cameras not yet scanned</p>
-      <p style="font-size:13px;color:var(--amber);margin-top:2px;">Export will include blank Alta Keys for unscanned cameras.</p>
+      <p style="font-size:13px;color:var(--amber);margin-top:2px;">Export will include blank Alta Keys for unscanned or skipped cameras.</p>
     </div>
     <div class="card" id="review-summary"></div>
     <button class="btn btn-success" onclick="downloadCSV()">Download CSV</button>
@@ -161,6 +188,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     <button class="scanner-close" onclick="closeScanner()">&#x2715;</button>
     <h2 id="scanner-title">Scanning</h2>
     <span id="scanner-badge" style="font-size:13px;color:rgba(255,255,255,0.6);"></span>
+    <button id="torch-btn" onclick="toggleTorch()" title="Toggle flashlight">&#9729;</button>
   </div>
   <div id="video-container">
     <video id="preview" autoplay playsinline muted></video>
@@ -175,9 +203,10 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
   <div class="scanner-footer">
     <div class="post-scan-btns" id="post-scan-btns">
       <button class="post-scan-next" id="post-scan-next" onclick="goNextCamera()">Next camera</button>
-      <button class="post-scan-done" onclick="closeScanner()">Back to list</button>
+      <button class="post-scan-list" onclick="closeScanner()">Back to list</button>
     </div>
-    <button class="manual-btn" id="manual-toggle-btn" onclick="toggleManual()">Enter key manually instead</button>
+    <button class="footer-link" id="manual-toggle-btn" onclick="toggleManual()">Enter key manually instead</button>
+    <button class="footer-link skip-link" id="skip-btn" onclick="skipCamera()">Skip — camera not available to scan</button>
     <div class="manual-input-row" id="manual-row">
       <input type="text" id="manual-key" placeholder="Paste URL or XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false">
       <button onclick="submitManual()">Save</button>
@@ -188,14 +217,53 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
+const STORAGE_KEY = 'alta-inventory-session';
 
 let session = null;
 let scanningIndex = null;
 let nextIndex = null;
 let scanCooldown = false;
 let activeStream = null;
+let videoTrack = null;
+let torchOn = false;
 let scanLoopId = null;
 let frameCount = 0;
+
+// ── Persistence ──────────────────────────────────────────────────────────────
+
+function saveSession() {
+  if (session) localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+}
+
+function checkSavedSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (!s || !s.cameras || !s.cameras.length) return;
+    const done    = s.cameras.filter(c => c.scanned).length;
+    const skipped = s.cameras.filter(c => c.skipped).length;
+    let sub = `${s.siteCode} \u2014 ${s.site} \u00b7 ${done} of ${s.cameras.length} scanned`;
+    if (skipped) sub += `, ${skipped} skipped`;
+    document.getElementById('restore-sub').textContent = sub;
+    document.getElementById('restore-banner').style.display = 'block';
+  } catch (e) { localStorage.removeItem(STORAGE_KEY); }
+}
+
+function restoreSession() {
+  try {
+    session = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    renderScanScreen();
+    showScreen('screen-scan');
+  } catch (e) { dismissRestore(); }
+}
+
+function dismissRestore() {
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('restore-banner').style.display = 'none';
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function setStatus(main, debug) {
   document.getElementById('status-main').textContent = main;
@@ -215,6 +283,8 @@ function extractAltaKey(raw) {
   return match ? match[0].toUpperCase() : null;
 }
 
+// ── Setup ─────────────────────────────────────────────────────────────────────
+
 function startSession() {
   const siteCode = document.getElementById('setup-sitecode').value.trim().toUpperCase();
   const site     = document.getElementById('setup-site').value.trim();
@@ -230,14 +300,16 @@ function startSession() {
   session = {
     siteCode, site, group, count,
     cameras: Array.from({ length: count }, (_, i) => ({
-      name: `${siteCode}-C${pad(i + 1)}`, altaKey: '', scanned: false
+      name: `${siteCode}-C${pad(i + 1)}`, altaKey: '', scanned: false, skipped: false
     }))
   };
+  saveSession();
   renderScanScreen();
   showScreen('screen-scan');
 }
 
-// Parse a CSV row respecting quoted fields
+// ── CSV Import ────────────────────────────────────────────────────────────────
+
 function parseCSVRow(line) {
   const cols = [];
   let cur = '', inQ = false;
@@ -248,9 +320,7 @@ function parseCSVRow(line) {
       else inQ = !inQ;
     } else if (ch === ',' && !inQ) {
       cols.push(cur); cur = '';
-    } else {
-      cur += ch;
-    }
+    } else { cur += ch; }
   }
   cols.push(cur);
   return cols;
@@ -266,27 +336,27 @@ function importCSV(input) {
     try {
       const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
       if (lines.length < 2) throw new Error('CSV appears empty.');
-      const header = parseCSVRow(lines[0]).map(h => h.trim());
-      const nameIdx   = header.findIndex(h => h === 'Name');
-      const keyIdx    = header.findIndex(h => h === 'Alta Key');
-      const siteIdx   = header.findIndex(h => h === 'Site');
-      const groupIdx  = header.findIndex(h => h === 'Device Group');
+      const header   = parseCSVRow(lines[0]).map(h => h.trim());
+      const nameIdx  = header.findIndex(h => h === 'Name');
+      const keyIdx   = header.findIndex(h => h === 'Alta Key');
+      const siteIdx  = header.findIndex(h => h === 'Site');
+      const groupIdx = header.findIndex(h => h === 'Device Group');
       if (nameIdx === -1 || keyIdx === -1) throw new Error('Missing required columns (Name, Alta Key).');
       const cameras = [];
       let site = '', group = '';
       for (let i = 1; i < lines.length; i++) {
-        const cols = parseCSVRow(lines[i]);
+        const cols    = parseCSVRow(lines[i]);
         const name    = (cols[nameIdx]  || '').trim();
         const altaKey = (cols[keyIdx]   || '').trim();
         if (!name) continue;
         if (siteIdx  !== -1 && !site)  site  = (cols[siteIdx]  || '').trim();
         if (groupIdx !== -1 && !group) group = (cols[groupIdx] || '').trim();
-        cameras.push({ name, altaKey, scanned: altaKey !== '' });
+        cameras.push({ name, altaKey, scanned: altaKey !== '', skipped: false });
       }
       if (!cameras.length) throw new Error('No camera rows found.');
-      // Infer site code from first camera name (everything before last -C##)
       const siteCode = cameras[0].name.replace(/-C\d+$/, '');
       session = { siteCode, site, group, count: cameras.length, cameras };
+      saveSession();
       renderScanScreen();
       showScreen('screen-scan');
     } catch (ex) {
@@ -298,45 +368,101 @@ function importCSV(input) {
   reader.readAsText(file);
 }
 
+// ── Scan screen ───────────────────────────────────────────────────────────────
+
 function renderScanScreen() {
   const { siteCode, site, group, cameras } = session;
-  const done = cameras.filter(c => c.scanned).length;
-  const total = cameras.length;
-  const pct = total ? Math.round(done / total * 100) : 0;
+  const done    = cameras.filter(c => c.scanned).length;
+  const skipped = cameras.filter(c => c.skipped).length;
+  const remain  = cameras.filter(c => !c.scanned && !c.skipped).length;
+  const handled = done + skipped;
+  const total   = cameras.length;
+  const pct     = total ? Math.round(handled / total * 100) : 0;
   document.getElementById('scan-header-title').textContent = `${siteCode} \u2014 ${group}`;
   document.getElementById('scan-header-sub').textContent = site;
   document.getElementById('stat-done').textContent = done;
-  document.getElementById('stat-remain').textContent = total - done;
+  document.getElementById('stat-skip').textContent = skipped;
+  document.getElementById('stat-remain').textContent = remain;
   document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent = `${done} of ${total} cameras scanned`;
+  let label = `${done} of ${total} cameras scanned`;
+  if (skipped) label += ` \u00b7 ${skipped} skipped`;
+  document.getElementById('progress-label').textContent = label;
+
   const list = document.getElementById('camera-list');
   list.innerHTML = '';
   cameras.forEach((cam, i) => {
     const li = document.createElement('li');
     li.className = 'camera-item';
+    const statusClass = cam.scanned ? 'done' : cam.skipped ? 'skipped' : 'pending';
+    const statusIcon  = cam.scanned ? '&#10003;' : cam.skipped ? '&mdash;' : i + 1;
+    const keyLabel    = cam.scanned ? cam.altaKey : cam.skipped ? 'Skipped' : 'Not yet scanned';
     li.innerHTML = `
-      <div class="cam-status ${cam.scanned ? 'done' : 'pending'}">${cam.scanned ? '&#10003;' : i + 1}</div>
+      <div class="cam-status ${statusClass}">${statusIcon}</div>
       <div class="cam-info">
-        <div class="cam-name">${cam.name}</div>
-        <div class="cam-key">${cam.scanned ? cam.altaKey : 'Not yet scanned'}</div>
+        <div class="cam-name-wrap" id="cnw-${i}">
+          <span class="cam-name">${cam.name}</span>
+          <button class="cam-edit-btn" onclick="editCameraName(${i})" title="Rename">&#9998;</button>
+        </div>
+        <div class="cam-name-edit" id="cne-${i}">
+          <input type="text" id="cni-${i}" value="${cam.name}" autocapitalize="characters" autocomplete="off" spellcheck="false"
+            onkeydown="if(event.key==='Enter')saveCameraName(${i});else if(event.key==='Escape')cancelEditName(${i})">
+          <button class="save-btn" onclick="saveCameraName(${i})">OK</button>
+          <button class="cancel-btn" onclick="cancelEditName(${i})">&#x2715;</button>
+        </div>
+        <div class="cam-key">${keyLabel}</div>
       </div>
-      <button class="cam-scan-btn" onclick="openScanner(${i})">${cam.scanned ? 'Re-scan' : 'Scan'}</button>`;
+      <button class="cam-scan-btn" onclick="openScanner(${i})">${cam.scanned ? 'Re-scan' : cam.skipped ? 'Scan' : 'Scan'}</button>`;
     list.appendChild(li);
   });
-  document.getElementById('btn-review').style.display = done === total ? 'block' : 'none';
+
+  document.getElementById('btn-review').style.display =
+    cameras.every(c => c.scanned || c.skipped) ? 'block' : 'none';
 }
 
+// ── Camera name editing ───────────────────────────────────────────────────────
+
+function editCameraName(i) {
+  document.getElementById(`cnw-${i}`).style.display = 'none';
+  const edit = document.getElementById(`cne-${i}`);
+  edit.classList.add('visible');
+  document.getElementById(`cni-${i}`).focus();
+  document.getElementById(`cni-${i}`).select();
+}
+
+function saveCameraName(i) {
+  const val = document.getElementById(`cni-${i}`).value.trim();
+  if (val) { session.cameras[i].name = val; saveSession(); }
+  renderScanScreen();
+}
+
+function cancelEditName(i) {
+  document.getElementById(`cnw-${i}`).style.display = '';
+  document.getElementById(`cne-${i}`).classList.remove('visible');
+}
+
+// ── Scanner ───────────────────────────────────────────────────────────────────
+
 async function openScanner(index) {
+  const cam = session.cameras[index];
+  if (cam.scanned) {
+    if (!confirm(`Replace ${cam.altaKey} on ${cam.name}?`)) return;
+  }
+
   scanningIndex = index;
   nextIndex = null;
   scanCooldown = false;
+  torchOn = false;
   frameCount = 0;
-  const cam = session.cameras[index];
+  videoTrack = null;
+
   document.getElementById('scanner-title').textContent = `Scanning ${cam.name}`;
   document.getElementById('scanner-badge').textContent = `${index + 1} of ${session.cameras.length}`;
+  document.getElementById('torch-btn').style.display = 'none';
+  document.getElementById('torch-btn').classList.remove('on');
   setStatus('Starting camera...', '');
   document.getElementById('post-scan-btns').classList.remove('visible');
   document.getElementById('manual-toggle-btn').style.display = 'block';
+  document.getElementById('skip-btn').style.display = 'block';
   document.getElementById('manual-row').classList.remove('visible');
   document.getElementById('manual-key').value = '';
   document.getElementById('scan-flash').style.display = 'none';
@@ -358,16 +484,30 @@ async function openScanner(index) {
       video.addEventListener('canplay', resolve, { once: true });
     });
 
-    const track = activeStream.getVideoTracks()[0];
-    const s = track.getSettings();
+    videoTrack = activeStream.getVideoTracks()[0];
+    const s = videoTrack.getSettings();
     setStatus('Ready — point at QR code', `${s.width || '?'}x${s.height || '?'} | frames: 0`);
+
+    // Show torch button if device supports it
+    const caps = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
+    if (caps.torch) document.getElementById('torch-btn').style.display = 'block';
 
     startScanLoop(video);
 
   } catch (err) {
     setStatus('Camera error: ' + (err.message || err), err.name || '');
     document.getElementById('manual-row').classList.add('visible');
+    document.getElementById('skip-btn').style.display = 'block';
   }
+}
+
+async function toggleTorch() {
+  if (!videoTrack) return;
+  torchOn = !torchOn;
+  try {
+    await videoTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
+    document.getElementById('torch-btn').classList.toggle('on', torchOn);
+  } catch (e) { torchOn = !torchOn; }
 }
 
 function startScanLoop(video) {
@@ -415,37 +555,69 @@ function startScanLoop(video) {
 
 function handleScanResult(key) {
   scanCooldown = true;
-  session.cameras[scanningIndex].altaKey = key;
-  session.cameras[scanningIndex].scanned = true;
-  setStatus('Captured: ' + key, '');
+
+  // Duplicate key check
+  const dupIdx = session.cameras.findIndex((c, i) => i !== scanningIndex && c.altaKey === key);
+  if (dupIdx !== -1) {
+    setStatus(`Already assigned to ${session.cameras[dupIdx].name} — saved anyway`, '');
+  } else {
+    setStatus('Captured: ' + key, '');
+  }
+
+  session.cameras[scanningIndex].altaKey  = key;
+  session.cameras[scanningIndex].scanned  = true;
+  session.cameras[scanningIndex].skipped  = false;
+  saveSession();
+
   document.getElementById('scan-flash').style.display = 'block';
 
-  // Find next unscanned camera
-  nextIndex = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned);
-
-  // Show post-scan buttons, hide manual entry
+  nextIndex = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
   const nextBtn = document.getElementById('post-scan-next');
   nextBtn.style.display = nextIndex !== -1 ? '' : 'none';
   document.getElementById('post-scan-btns').classList.add('visible');
   document.getElementById('manual-toggle-btn').style.display = 'none';
+  document.getElementById('skip-btn').style.display = 'none';
   document.getElementById('manual-row').classList.remove('visible');
+}
+
+function skipCamera() {
+  session.cameras[scanningIndex].skipped  = true;
+  session.cameras[scanningIndex].scanned  = false;
+  session.cameras[scanningIndex].altaKey  = '';
+  saveSession();
+  setStatus('Camera skipped', '');
+
+  nextIndex = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
+  const nextBtn = document.getElementById('post-scan-next');
+  nextBtn.style.display = nextIndex !== -1 ? '' : 'none';
+  document.getElementById('post-scan-btns').classList.add('visible');
+  document.getElementById('manual-toggle-btn').style.display = 'none';
+  document.getElementById('skip-btn').style.display = 'none';
+  document.getElementById('manual-row').classList.remove('visible');
+  scanCooldown = true;
 }
 
 async function goNextCamera() {
   const idx = nextIndex;
   await closeScanner();
-  renderScanScreen();
   if (idx !== -1) openScanner(idx);
 }
 
 async function closeScanner() {
   document.getElementById('scanner-modal').classList.remove('open');
   if (scanLoopId) { cancelAnimationFrame(scanLoopId); scanLoopId = null; }
+  if (videoTrack && torchOn) {
+    try { await videoTrack.applyConstraints({ advanced: [{ torch: false }] }); } catch (e) {}
+  }
   if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
   document.getElementById('preview').srcObject = null;
+  videoTrack = null;
+  torchOn = false;
   frameCount = 0;
   renderScanScreen();
 }
+
+// ── Manual entry ──────────────────────────────────────────────────────────────
 
 function toggleManual() {
   const row = document.getElementById('manual-row');
@@ -465,35 +637,43 @@ function submitManual() {
 
 document.getElementById('manual-key').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
 
+// ── Review & export ───────────────────────────────────────────────────────────
+
 function goToReview() {
   const { cameras, siteCode, site, group } = session;
-  const done = cameras.filter(c => c.scanned).length;
-  const total = cameras.length;
+  const done    = cameras.filter(c => c.scanned).length;
+  const skipped = cameras.filter(c => c.skipped).length;
+  const total   = cameras.length;
   document.getElementById('review-header-sub').textContent = `${siteCode} \u2014 ${site}`;
-  document.getElementById('review-incomplete-warn').style.display = done === total ? 'none' : 'block';
+  document.getElementById('review-incomplete-warn').style.display =
+    (done + skipped) === total ? 'none' : 'block';
   document.getElementById('review-summary').innerHTML = `
     <div class="summary-row"><span class="summary-label">Site code</span><span class="summary-value">${siteCode}</span></div>
     <div class="summary-row"><span class="summary-label">Site</span><span class="summary-value">${site}</span></div>
     <div class="summary-row"><span class="summary-label">Device group</span><span class="summary-value">${group}</span></div>
     <div class="summary-row"><span class="summary-label">Total cameras</span><span class="summary-value">${total}</span></div>
     <div class="summary-row"><span class="summary-label">Scanned</span><span class="summary-value" style="color:var(--green-mid)">${done}</span></div>
-    ${done < total ? `<div class="summary-row"><span class="summary-label">Missing</span><span class="summary-value" style="color:var(--amber)">${total - done}</span></div>` : ''}`;
+    ${skipped ? `<div class="summary-row"><span class="summary-label">Skipped</span><span class="summary-value" style="color:var(--amber)">${skipped}</span></div>` : ''}
+    ${(done + skipped) < total ? `<div class="summary-row"><span class="summary-label">Missing</span><span class="summary-value" style="color:var(--red)">${total - done - skipped}</span></div>` : ''}`;
   showScreen('screen-review');
 }
 
 function buildCSV() {
   const headers = ['Name','IP Address / Alta Key','Alta Key','Port','Site','Device Group','Configuration Profile','Protocol','Encryption','Connected to','Labels','GPS Coordinates'];
-  const escape = v => `"${String(v).replace(/"/g,'""')}"`;
-  const rows = session.cameras.map(c => [c.name, '', c.altaKey, '', session.site, session.group, '', '', '', '', '', '']);
+  const escape  = v => `"${String(v).replace(/"/g, '""')}"`;
+  const rows    = session.cameras.map(c =>
+    [c.name, '', c.altaKey, '', session.site, session.group, '', '', '', '', '', '']);
   return [headers, ...rows].map(r => r.map(escape).join(',')).join('\r\n');
 }
 
-function csvFilename() { return `${session.siteCode}-cameras-${new Date().toISOString().slice(0,10)}.csv`; }
+function csvFilename() {
+  return `${session.siteCode}-cameras-${new Date().toISOString().slice(0, 10)}.csv`;
+}
 
 function downloadCSV() {
   const blob = new Blob([buildCSV()], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
   a.href = url; a.download = csvFilename(); a.click();
   URL.revokeObjectURL(url);
 }
@@ -501,9 +681,14 @@ function downloadCSV() {
 function newBatch() {
   if (!confirm('Start a new batch? This will clear the current session.')) return;
   session = null;
+  localStorage.removeItem(STORAGE_KEY);
   ['setup-sitecode','setup-site','setup-group','setup-count'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('restore-banner').style.display = 'none';
   showScreen('screen-setup');
 }
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+checkSavedSession();
 </script>
 </body>
 </html>
