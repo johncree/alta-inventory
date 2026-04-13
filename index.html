@@ -678,7 +678,7 @@ async function downloadCSV() {
   // Web Share API — triggers native share sheet on iOS and Android
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: csvFilename() });
+      await navigator.share({ files: [file] });
       return;
     } catch (e) {
       if (e.name === 'AbortError') return; // user cancelled
