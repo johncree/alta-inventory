@@ -138,7 +138,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     </div>
     <div class="card" style="padding:12px 16px;"><ul class="camera-list" id="camera-list"></ul></div>
     <button class="btn btn-success" onclick="goToReview()" id="btn-review" style="display:none">Review &amp; export CSV</button>
-    <button class="btn btn-outline" onclick="goToReview()">Review &amp; export CSV</button>
+    <button class="btn btn-outline" onclick="goToReview()">Review progress</button>
   </div>
 </div>
 
@@ -484,7 +484,7 @@ function goToReview() {
 function buildCSV() {
   const headers = ['Name','IP Address / Alta Key','Alta Key','Port','Site','Device Group','Configuration Profile','Protocol','Encryption','Connected to','Labels','GPS Coordinates'];
   const escape = v => `"${String(v).replace(/"/g,'""')}"`;
-  const rows = session.cameras.map(c => [c.name, c.altaKey, c.altaKey, '', session.site, session.group, '', '', '', '', '', '']);
+  const rows = session.cameras.map(c => [c.name, '', c.altaKey, '', session.site, session.group, '', '', '', '', '', '']);
   return [headers, ...rows].map(r => r.map(escape).join(',')).join('\r\n');
 }
 
