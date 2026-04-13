@@ -20,16 +20,16 @@ Fill in the session details on the setup screen:
 
 | Field | Example | Notes |
 |---|---|---|
-| Site code | `OAKW` | Short identifier, used in camera names |
-| Site name | `Oakland Warehouse` | Full site name, appears in CSV |
-| Device group | `Exterior` | Group name for Alta Access |
+| Site code | `FHS` | Short identifier, used in camera names |
+| Site name | `Fenton Community High School District 99` | Full site name, appears in CSV |
+| Device group | `Fenton High School` | Group name for Alta Access |
 | Number of cameras | `24` | Total expected cameras at this site |
 
 Tap **Start scanning session**.
 
 ### 2. Scan cameras
 
-Each camera gets a sequential name (e.g. `OAKW-C01`, `OAKW-C02`…). Tap **Scan** next to any camera to open the scanner.
+Each camera gets a sequential name (e.g. `FHS-C01`, `FHS-C02`…). Tap **Scan** next to any camera to open the scanner.
 
 - **Point your phone camera at the QR code** on the camera box — the Alta Key is extracted automatically
 - **Flashlight toggle** (⚡) appears in the scanner header if your device supports it — useful in low-light installs
@@ -67,7 +67,7 @@ Matches the Alta Access bulk import template exactly:
 
 | Column | Value |
 |---|---|
-| Name | Camera name (e.g. `OAKW-C01`) |
+| Name | Camera name (e.g. `FHS-C01`) |
 | IP Address / Alta Key | *(blank)* |
 | Alta Key | Scanned Alta Key (e.g. `A1B2-C3D4-E5F6`) |
 | Port | *(blank)* |
