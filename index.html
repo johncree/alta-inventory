@@ -305,11 +305,20 @@ async function startCamera() {
   const video = document.getElementById('qr-video');
   const canvas = document.getElementById('qr-canvas');
   try {
-    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
+    const constraints = {
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    };
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = stream;
-    video.addEventListener('loadedmetadata', () => {
-      canvas.width = video.videoWidth; canvas.height = video.videoHeight; tickScan();
-    }, {once:true});
+    video.setAttribute('playsinline', true);
+    video.setAttribute('autoplay', true);
+    video.setAttribute('muted', true);
+    await video.play();
+    rafId = setInterval(() => tickScan(video, canvas), 200);
   } catch(e) {
     document.getElementById('scanner-status').textContent = 'Camera access denied. Use manual entry below.';
     document.getElementById('manual-row').classList.add('visible');
@@ -317,25 +326,28 @@ async function startCamera() {
 }
 
 function stopCamera() {
-  if (rafId) { cancelAnimationFrame(rafId); rafId=null; }
+  if (rafId) { clearInterval(rafId); rafId=null; }
   if (stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
   document.getElementById('qr-video').srcObject = null;
 }
 
-function tickScan() {
-  if (scanCooldown) { rafId=requestAnimationFrame(tickScan); return; }
-  const video=document.getElementById('qr-video'), canvas=document.getElementById('qr-canvas');
-  if (video.readyState!==video.HAVE_ENOUGH_DATA) { rafId=requestAnimationFrame(tickScan); return; }
-  const ctx=canvas.getContext('2d');
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  const img=ctx.getImageData(0,0,canvas.width,canvas.height);
-  const result=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
-  if (result) {
-    const match=result.data.match(ALTA_KEY_RE);
-    if (match) { handleScanResult(match[0]); return; }
-    document.getElementById('scanner-status').textContent='QR detected \u2014 no Alta Key found, try another angle';
+function tickScan(video, canvas) {
+  if (scanCooldown) return;
+  if (!video || video.readyState < 2 || video.videoWidth === 0) return;
+  if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
   }
-  rafId=requestAnimationFrame(tickScan);
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  let img;
+  try { img = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch(e) { return; }
+  const result = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+  if (result && result.data) {
+    const match = result.data.match(ALTA_KEY_RE);
+    if (match) { handleScanResult(match[0]); return; }
+    document.getElementById('scanner-status').textContent = 'QR detected \u2014 no Alta Key found, try another angle';
+  }
 }
 
 function handleScanResult(key) {
