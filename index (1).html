@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Alta Camera Inventory</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#185FA5;--blue-light:#E6F1FB;--blue-mid:#378ADD;
+  --green:#3B6D11;--green-light:#EAF3DE;--green-mid:#639922;
+  --amber:#854F0B;--amber-light:#FAEEDA;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --gray:#5F5E5A;--gray-light:#F1EFE8;
+  --border:rgba(0,0,0,0.12);--text:#1a1a1a;--text-muted:#6b6b68;
+  --surface:#ffffff;--page-bg:#f5f4f0;--radius:12px;--radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --blue:#85B7EB;--blue-light:#0C447C;--blue-mid:#378ADD;
+    --green:#97C459;--green-light:#27500A;--green-mid:#639922;
+    --amber:#FAC775;--amber-light:#633806;
+    --red:#F09595;--red-light:#791F1F;
+    --gray:#B4B2A9;--gray-light:#2C2C2A;
+    --border:rgba(255,255,255,0.12);--text:#f0ede6;--text-muted:#9a9890;
+    --surface:#1e1e1c;--page-bg:#141412;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--page-bg);color:var(--text);min-height:100vh;font-size:16px;line-height:1.5}
+.screen{display:none;padding:0 0 80px}
+.screen.active{display:block}
+header{background:var(--surface);border-bottom:0.5px solid var(--border);padding:14px 16px 12px;position:sticky;top:0;z-index:10}
+header h1{font-size:17px;font-weight:500}
+header p{font-size:13px;color:var(--text-muted);margin-top:1px}
+.content{padding:16px}
+.card{background:var(--surface);border-radius:var(--radius);border:0.5px solid var(--border);padding:16px;margin-bottom:12px}
+label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+input[type="text"],input[type="number"]{width:100%;height:44px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--page-bg);color:var(--text);font-size:16px;padding:0 12px;outline:none;margin-bottom:14px;-webkit-appearance:none}
+input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.15)}
+.btn{display:block;width:100%;height:50px;border-radius:var(--radius-sm);border:none;font-size:16px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.btn:active{opacity:.75}
+.btn-primary{background:var(--blue-mid);color:#fff}
+.btn-success{background:var(--green-mid);color:#fff}
+.btn-outline{background:transparent;border:0.5px solid var(--border);color:var(--text);margin-top:8px}
+.btn+.btn{margin-top:10px}
+.progress-bar-wrap{background:var(--gray-light);border-radius:99px;height:6px;margin:10px 0 4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--blue-mid);border-radius:99px;transition:width .3s ease}
+.camera-list{list-style:none}
+.camera-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--border)}
+.camera-item:last-child{border-bottom:none}
+.cam-status{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0}
+.cam-status.done{background:var(--green-light);color:var(--green)}
+.cam-status.pending{background:var(--gray-light);color:var(--gray)}
+.cam-info{flex:1;min-width:0}
+.cam-name{font-size:15px;font-weight:500}
+.cam-key{font-size:12px;color:var(--text-muted);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cam-scan-btn{background:var(--blue-light);color:var(--blue);border:none;border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.cam-scan-btn:active{opacity:.7}
+.scanner-modal{display:none;position:fixed;inset:0;background:#000;z-index:100;flex-direction:column}
+.scanner-modal.open{display:flex}
+.scanner-header{padding:16px;color:#fff;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.7)}
+.scanner-header h2{font-size:17px;font-weight:500;flex:1}
+.scanner-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:0 4px;line-height:1}
+#video-container{flex:1;position:relative;overflow:hidden;background:#000}
+#preview{width:100%;height:100%;object-fit:cover;display:block}
+.scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scan-box{width:220px;height:220px;border:2px solid rgba(55,138,221,0.8);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)}
+.scan-success-flash{position:absolute;inset:0;background:rgba(99,153,34,0.4);display:none;pointer-events:none;z-index:10}
+.scanner-status{padding:10px 16px;color:#fff;text-align:center;font-size:13px;background:rgba(0,0,0,0.75);min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;word-break:break-all}
+.scanner-footer{background:rgba(0,0,0,0.8);padding:12px 16px}
+.manual-btn{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
+.manual-input-row{display:none;gap:8px}
+.manual-input-row.visible{display:flex}
+.manual-input-row input{flex:1;height:44px;border-radius:var(--radius-sm);border:0.5px solid #555;background:#222;color:#fff;padding:0 12px;font-size:16px;outline:none;margin:0}
+.manual-input-row button{height:44px;padding:0 16px;border-radius:var(--radius-sm);background:var(--blue-mid);color:#fff;border:none;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:14px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:var(--text-muted)}
+.summary-value{font-weight:500}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat-card{background:var(--surface);border-radius:var(--radius-sm);border:0.5px solid var(--border);padding:12px 14px;text-align:center}
+.stat-num{font-size:28px;font-weight:500}
+.stat-lbl{font-size:12px;color:var(--text-muted);margin-top:2px}
+.stat-blue{color:var(--blue-mid)}
+.stat-green{color:var(--green-mid)}
+</style>
+</head>
+<body>
+
+<div id="screen-setup" class="screen active">
+  <header><h1>Alta Camera Inventory</h1><p>New batch setup</p></header>
+  <div class="content">
+    <div class="card">
+      <label>Site code</label>
+      <input type="text" id="setup-sitecode" placeholder="e.g. OAKW" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <label>Site name</label>
+      <input type="text" id="setup-site" placeholder="e.g. Oakland Warehouse" autocomplete="off" spellcheck="false">
+      <label>Device group</label>
+      <input type="text" id="setup-group" placeholder="e.g. Exterior" autocomplete="off" spellcheck="false">
+      <label>Number of cameras</label>
+      <input type="number" id="setup-count" placeholder="e.g. 24" min="1" max="999">
+    </div>
+    <div id="setup-error" style="color:var(--red);font-size:13px;margin-bottom:10px;display:none;padding:0 4px;"></div>
+    <button class="btn btn-primary" onclick="startSession()">Start scanning session</button>
+  </div>
+</div>
+
+<div id="screen-scan" class="screen">
+  <header><h1 id="scan-header-title">Scanning</h1><p id="scan-header-sub"></p></header>
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num stat-green" id="stat-done">0</div><div class="stat-lbl">Scanned</div></div>
+      <div class="stat-card"><div class="stat-num stat-blue" id="stat-remain">0</div><div class="stat-lbl">Remaining</div></div>
+    </div>
+    <div class="card" style="margin-bottom:8px;">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:6px;" id="progress-label">0 of 0 cameras scanned</p>
+    </div>
+    <div class="card" style="padding:12px 16px;"><ul class="camera-list" id="camera-list"></ul></div>
+    <button class="btn btn-success" onclick="goToReview()" id="btn-review" style="display:none">Review &amp; export CSV</button>
+    <button class="btn btn-outline" onclick="goToReview()">Review progress</button>
+  </div>
+</div>
+
+<div id="screen-review" class="screen">
+  <header><h1>Review &amp; export</h1><p id="review-header-sub"></p></header>
+  <div class="content">
+    <div id="review-incomplete-warn" style="display:none;background:var(--amber-light);border:0.5px solid var(--amber);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;">
+      <p style="font-size:13px;color:var(--amber);font-weight:500;">Some cameras not yet scanned</p>
+      <p style="font-size:13px;color:var(--amber);margin-top:2px;">Export will include blank Alta Keys for unscanned cameras.</p>
+    </div>
+    <div class="card" id="review-summary"></div>
+    <button class="btn btn-success" onclick="downloadCSV()">Download CSV</button>
+    <button class="btn btn-outline" style="margin-top:16px;" onclick="showScreen('screen-scan')">Back to scanning</button>
+    <button class="btn btn-outline" style="margin-top:8px;border-color:var(--red);color:var(--red);" onclick="newBatch()">Start new batch</button>
+  </div>
+</div>
+
+<div id="scanner-modal" class="scanner-modal">
+  <div class="scanner-header">
+    <button class="scanner-close" onclick="closeScanner()">&#x2715;</button>
+    <h2 id="scanner-title">Scanning</h2>
+    <span id="scanner-badge" style="font-size:13px;color:rgba(255,255,255,0.6);"></span>
+  </div>
+  <div id="video-container">
+    <video id="preview" autoplay playsinline muted></video>
+    <canvas id="scan-canvas" style="display:none;"></canvas>
+    <div class="scan-overlay"><div class="scan-box"></div></div>
+    <div class="scan-success-flash" id="scan-flash"></div>
+  </div>
+  <div class="scanner-status" id="scanner-status">
+    <span id="status-main">Starting camera...</span>
+    <span id="status-debug" style="font-size:11px;opacity:0.6;font-family:monospace;"></span>
+  </div>
+  <div class="scanner-footer">
+    <button class="manual-btn" onclick="toggleManual()">Enter key manually instead</button>
+    <div class="manual-input-row" id="manual-row">
+      <input type="text" id="manual-key" placeholder="Paste URL or XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false">
+      <button onclick="submitManual()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@zxing/library@0.19.2/umd/index.min.js"></script>
+<script>
+const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
+
+let session = null;
+let scanningIndex = null;
+let scanCooldown = false;
+let activeStream = null;
+let scanLoopId = null;
+let codeReader = null;
+let frameCount = 0;
+
+function setStatus(main, debug) {
+  document.getElementById('status-main').textContent = main;
+  document.getElementById('status-debug').textContent = debug || '';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function extractAltaKey(raw) {
+  const match = raw.match(ALTA_KEY_RE);
+  return match ? match[0].toUpperCase() : null;
+}
+
+function startSession() {
+  const siteCode = document.getElementById('setup-sitecode').value.trim().toUpperCase();
+  const site     = document.getElementById('setup-site').value.trim();
+  const group    = document.getElementById('setup-group').value.trim();
+  const count    = parseInt(document.getElementById('setup-count').value, 10);
+  const err      = document.getElementById('setup-error');
+  if (!siteCode || !site || !group || !count || count < 1) {
+    err.textContent = 'Please fill in all fields.';
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  session = {
+    siteCode, site, group, count,
+    cameras: Array.from({ length: count }, (_, i) => ({
+      name: `${siteCode}-C${pad(i + 1)}`, altaKey: '', scanned: false
+    }))
+  };
+  renderScanScreen();
+  showScreen('screen-scan');
+}
+
+function renderScanScreen() {
+  const { siteCode, site, group, cameras } = session;
+  const done = cameras.filter(c => c.scanned).length;
+  const total = cameras.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('scan-header-title').textContent = `${siteCode} \u2014 ${group}`;
+  document.getElementById('scan-header-sub').textContent = site;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-remain').textContent = total - done;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${done} of ${total} cameras scanned`;
+  const list = document.getElementById('camera-list');
+  list.innerHTML = '';
+  cameras.forEach((cam, i) => {
+    const li = document.createElement('li');
+    li.className = 'camera-item';
+    li.innerHTML = `
+      <div class="cam-status ${cam.scanned ? 'done' : 'pending'}">${cam.scanned ? '&#10003;' : i + 1}</div>
+      <div class="cam-info">
+        <div class="cam-name">${cam.name}</div>
+        <div class="cam-key">${cam.scanned ? cam.altaKey : 'Not yet scanned'}</div>
+      </div>
+      <button class="cam-scan-btn" onclick="openScanner(${i})">${cam.scanned ? 'Re-scan' : 'Scan'}</button>`;
+    list.appendChild(li);
+  });
+  document.getElementById('btn-review').style.display = done === total ? 'block' : 'none';
+}
+
+async function openScanner(index) {
+  scanningIndex = index;
+  scanCooldown = false;
+  frameCount = 0;
+  const cam = session.cameras[index];
+  document.getElementById('scanner-title').textContent = `Scanning ${cam.name}`;
+  document.getElementById('scanner-badge').textContent = `${index + 1} of ${session.cameras.length}`;
+  setStatus('Starting camera...', '');
+  document.getElementById('manual-row').classList.remove('visible');
+  document.getElementById('manual-key').value = '';
+  document.getElementById('scan-flash').style.display = 'none';
+  document.getElementById('scanner-modal').classList.add('open');
+
+  try {
+    setStatus('Requesting camera permission...', '');
+    activeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+
+    const video = document.getElementById('preview');
+    video.srcObject = activeStream;
+    setStatus('Camera granted — starting video...', '');
+    await video.play();
+
+    await new Promise(resolve => {
+      if (video.readyState >= 2) return resolve();
+      video.addEventListener('canplay', resolve, { once: true });
+    });
+
+    const track = activeStream.getVideoTracks()[0];
+    const s = track.getSettings();
+    setStatus('Ready — point at QR code', `${s.width || '?'}x${s.height || '?'} | frames: 0`);
+
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    startScanLoop(video);
+
+  } catch (err) {
+    setStatus('Camera error: ' + (err.message || err), err.name || '');
+    document.getElementById('manual-row').classList.add('visible');
+  }
+}
+
+function startScanLoop(video) {
+  const canvas = document.getElementById('scan-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function tick() {
+    if (scanCooldown || !activeStream) return;
+    frameCount++;
+
+    if (frameCount % 30 === 0) {
+      document.getElementById('status-debug').textContent =
+        `${video.videoWidth}x${video.videoHeight} | readyState:${video.readyState} | frames:${frameCount}`;
+    }
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const lum = new ZXing.RGBLuminanceSource(imageData.data, canvas.width, canvas.height);
+        const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+        const result = codeReader.decodeBitmap(bmp);
+        if (result) {
+          const raw = result.getText();
+          const key = extractAltaKey(raw);
+          if (key) {
+            handleScanResult(key);
+            return;
+          } else {
+            setStatus('QR found — no Alta Key pattern', 'raw: ' + raw.slice(0, 60));
+          }
+        }
+      } catch (e) {
+        if (e && e.name !== 'NotFoundException' && frameCount % 60 === 0) {
+          setStatus('Decode error', e.name + ': ' + (e.message || '').slice(0, 40));
+        }
+      }
+    }
+
+    scanLoopId = requestAnimationFrame(tick);
+  }
+
+  scanLoopId = requestAnimationFrame(tick);
+}
+
+function handleScanResult(key) {
+  scanCooldown = true;
+  session.cameras[scanningIndex].altaKey = key;
+  session.cameras[scanningIndex].scanned = true;
+  setStatus('Captured: ' + key, '');
+  document.getElementById('scan-flash').style.display = 'block';
+  const next = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned);
+  setTimeout(async () => {
+    await closeScanner();
+    renderScanScreen();
+    if (next !== -1) setTimeout(() => openScanner(next), 400);
+  }, 900);
+}
+
+async function closeScanner() {
+  document.getElementById('scanner-modal').classList.remove('open');
+  if (scanLoopId) { cancelAnimationFrame(scanLoopId); scanLoopId = null; }
+  if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
+  document.getElementById('preview').srcObject = null;
+  codeReader = null;
+  frameCount = 0;
+}
+
+function toggleManual() {
+  const row = document.getElementById('manual-row');
+  row.classList.toggle('visible');
+  if (row.classList.contains('visible')) document.getElementById('manual-key').focus();
+}
+
+function submitManual() {
+  const raw = document.getElementById('manual-key').value.trim();
+  const key = extractAltaKey(raw);
+  if (key) {
+    handleScanResult(key);
+  } else {
+    setStatus('No Alta Key found — expected XXXX-XXXX-XXXX', 'raw: ' + raw.slice(0, 60));
+  }
+}
+
+document.getElementById('manual-key').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
+
+function goToReview() {
+  const { cameras, siteCode, site, group } = session;
+  const done = cameras.filter(c => c.scanned).length;
+  const total = cameras.length;
+  document.getElementById('review-header-sub').textContent = `${siteCode} \u2014 ${site}`;
+  document.getElementById('review-incomplete-warn').style.display = done === total ? 'none' : 'block';
+  document.getElementById('review-summary').innerHTML = `
+    <div class="summary-row"><span class="summary-label">Site code</span><span class="summary-value">${siteCode}</span></div>
+    <div class="summary-row"><span class="summary-label">Site</span><span class="summary-value">${site}</span></div>
+    <div class="summary-row"><span class="summary-label">Device group</span><span class="summary-value">${group}</span></div>
+    <div class="summary-row"><span class="summary-label">Total cameras</span><span class="summary-value">${total}</span></div>
+    <div class="summary-row"><span class="summary-label">Scanned</span><span class="summary-value" style="color:var(--green-mid)">${done}</span></div>
+    ${done < total ? `<div class="summary-row"><span class="summary-label">Missing</span><span class="summary-value" style="color:var(--amber)">${total - done}</span></div>` : ''}`;
+  showScreen('screen-review');
+}
+
+function buildCSV() {
+  const headers = ['Name','IP Address / Alta Key','Alta Key','Port','Site','Device Group','Configuration Profile','Protocol','Encryption','Connected to','Labels','GPS Coordinates'];
+  const escape = v => `"${String(v).replace(/"/g,'""')}"`;
+  const rows = session.cameras.map(c => [c.name, c.altaKey, c.altaKey, '', '', session.site, session.group, '', '', '', '', '']);
+  return [headers, ...rows].map(r => r.map(escape).join(',')).join('\r\n');
+}
+
+function csvFilename() { return `${session.siteCode}-cameras-${new Date().toISOString().slice(0,10)}.csv`; }
+
+function downloadCSV() {
+  const blob = new Blob([buildCSV()], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = csvFilename(); a.click();
+  URL.revokeObjectURL(url);
+}
+
+function newBatch() {
+  if (!confirm('Start a new batch? This will clear the current session.')) return;
+  session = null;
+  ['setup-sitecode','setup-site','setup-group','setup-count'].forEach(id => document.getElementById(id).value = '');
+  showScreen('screen-setup');
+}
+</script>
+</body>
+</html>
