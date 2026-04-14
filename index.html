@@ -680,8 +680,8 @@ function csvFilename() {
 
 async function downloadCSV() {
   const csv  = buildCSV();
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const file = new File([blob], csvFilename(), { type: 'text/csv' });
+  const blob = new Blob([csv], { type: 'application/octet-stream' });
+  const file = new File([blob], csvFilename(), { type: 'application/octet-stream' });
 
   // Web Share API — triggers native share sheet on iOS and Android
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
