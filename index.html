@@ -102,7 +102,10 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .post-scan-next{background:var(--blue-mid);color:#fff}
 .post-scan-list{background:#333;color:#fff}
 .footer-link{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
-.footer-link.skip-link{color:#e8a87a}
+.pre-scan-btns{display:flex;gap:8px;margin-bottom:10px}
+.skip-btn{flex:1;border-radius:var(--radius-sm);border:0.5px solid var(--amber);background:transparent;color:var(--amber);cursor:pointer;padding:6px 12px;text-align:center;line-height:1.2}
+.skip-btn-label{font-size:14px;font-weight:500;display:block}
+.skip-btn-sub{font-size:11px;opacity:0.7;display:block;margin-top:1px}
 .manual-input-row{display:none;gap:8px}
 .manual-input-row.visible{display:flex}
 .manual-input-row input{flex:1;height:44px;border-radius:var(--radius-sm);border:0.5px solid #555;background:#222;color:#fff;padding:0 12px;font-size:16px;outline:none;margin:0}
@@ -214,7 +217,13 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
       <button class="post-scan-list" onclick="closeScanner()">Back to list</button>
     </div>
     <button class="footer-link" id="manual-toggle-btn" onclick="toggleManual()">Enter key manually instead</button>
-    <button class="footer-link skip-link" id="skip-btn" onclick="skipCamera()">Skip — camera not available to scan</button>
+    <div class="pre-scan-btns" id="pre-scan-btns">
+      <button class="skip-btn" id="skip-btn" onclick="skipCamera()">
+        <span class="skip-btn-label">Skip</span>
+        <span class="skip-btn-sub">camera not available to scan</span>
+      </button>
+      <button class="post-scan-list" onclick="closeScanner()">Back to list</button>
+    </div>
     <div class="manual-input-row" id="manual-row">
       <input type="text" id="manual-key" placeholder="Paste URL or XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false">
       <button onclick="submitManual()">Save</button>
@@ -470,7 +479,7 @@ async function openScanner(index) {
   setStatus('Starting camera...', '');
   document.getElementById('post-scan-btns').classList.remove('visible');
   document.getElementById('manual-toggle-btn').style.display = 'block';
-  document.getElementById('skip-btn').style.display = 'block';
+  document.getElementById('pre-scan-btns').style.display = 'flex';
   document.getElementById('manual-row').classList.remove('visible');
   document.getElementById('manual-key').value = '';
   document.getElementById('scan-flash').style.display = 'none';
@@ -505,7 +514,7 @@ async function openScanner(index) {
   } catch (err) {
     setStatus('Camera error: ' + (err.message || err), err.name || '');
     document.getElementById('manual-row').classList.add('visible');
-    document.getElementById('skip-btn').style.display = 'block';
+    document.getElementById('pre-scan-btns').style.display = 'flex';
   }
 }
 
@@ -584,7 +593,7 @@ function handleScanResult(key) {
   nextBtn.style.display = nextIndex !== -1 ? '' : 'none';
   document.getElementById('post-scan-btns').classList.add('visible');
   document.getElementById('manual-toggle-btn').style.display = 'none';
-  document.getElementById('skip-btn').style.display = 'none';
+  document.getElementById('pre-scan-btns').style.display = 'none';
   document.getElementById('manual-row').classList.remove('visible');
 }
 
