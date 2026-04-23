@@ -79,7 +79,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .stat-blue{color:var(--blue-mid)}
 .stat-green{color:var(--green-mid)}
 .stat-amber{color:var(--amber)}
-.site-logo{height:28px;width:auto;display:block}
+.site-logo{height:40px;width:auto;display:block;margin:0 auto 8px}
 @media(prefers-color-scheme:dark){.site-logo{filter:invert(1)}}
 /* Scanner modal */
 .scanner-modal{display:none;position:fixed;inset:0;background:#000;z-index:100;flex-direction:column}
@@ -131,9 +131,10 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 <body>
 
 <div id="screen-setup" class="screen active">
-  <header style="display:flex;align-items:center;gap:12px;">
+  <header style="text-align:center;padding:20px 16px 12px;">
     <img src="logo-smss.png" class="site-logo" alt="SMSS">
-    <div><h1>Alta Camera Inventory</h1><p>New batch setup</p></div>
+    <h1 style="font-size:18px;font-weight:600;margin:0 0 2px;">Alta Camera Inventory</h1>
+    <p style="font-size:12px;color:var(--text-muted);margin:0;" id="app-version-label">v20260423-1</p>
   </header>
   <div class="content">
     <div id="restore-banner" class="card restore-card" style="display:none">
