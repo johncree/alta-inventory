@@ -1,6 +1,6 @@
 # Alta Camera Inventory
 
-A mobile-friendly web app for scanning Avigilon Alta camera boxes on a job site and exporting a CSV ready for Alta Access bulk import.
+A web app designed for use on a smartphone in the field. Use your phone camera to scan QR codes on Avigilon Alta camera boxes and export a CSV ready for Alta Access bulk import. Laptop/desktop cameras are not recommended — phone cameras are significantly better at close-range QR scanning.
 
 **Live app:** https://johncree.github.io/alta-inventory/  
 **Version:** 20260423-6
@@ -9,7 +9,12 @@ A mobile-friendly web app for scanning Avigilon Alta camera boxes on a job site 
 
 ## Installation
 
-No install required. Open the live app URL in Safari on your iPhone and tap **Share → Add to Home Screen** for a native app-like experience with its own icon.
+No install required. Open the live app URL on your phone:
+
+- **iPhone:** Open in Safari, tap **Share → Add to Home Screen**
+- **Android:** Open in Chrome, tap **⋮ → Add to Home Screen**
+
+Adding to your home screen gives a full-screen, app-like experience with its own icon and offline support.
 
 ---
 
@@ -82,7 +87,7 @@ Only successfully scanned cameras are included. Skipped and unscanned cameras ar
 
 ## Features
 
-- QR scanning via phone camera — iOS Safari, Chrome on Android and desktop
+- QR scanning via phone camera — iOS Safari and Chrome on Android (phone cameras only; laptop cameras not recommended)
 - Manual Alta Key entry fallback
 - Rename cameras for out-of-order installs
 - Skip cameras that aren't available
