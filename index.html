@@ -104,11 +104,10 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .footer-link{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
 #update-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--amber-light);border-bottom:1px solid var(--amber);color:var(--amber);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;font-weight:500}
 #update-banner button{background:var(--amber);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer}
-.pre-scan-btns{display:flex;gap:8px;padding:12px 16px;background:rgba(0,0,0,0.8)}
-.skip-btn{flex:2;height:52px;border-radius:var(--radius-sm);border:0.5px solid var(--amber);background:transparent;color:var(--amber);cursor:pointer;padding:0 12px;text-align:center;line-height:1.2}
-.pre-scan-btns .post-scan-list{flex:1;height:52px}
-.skip-btn-label{font-size:14px;font-weight:500;display:block}
-.skip-btn-sub{font-size:11px;opacity:0.7;display:block;margin-top:1px}
+.pre-scan-btns{display:flex;gap:8px;margin-bottom:10px}
+.pre-scan-btns button{flex:1;height:50px;border-radius:var(--radius-sm);border:none;background:var(--blue-mid);color:#fff;font-size:15px;font-weight:500;cursor:pointer}
+.pre-scan-btns button:active{opacity:.75}
+.skip-btn-sub{font-size:11px;opacity:0.85;display:block;margin-top:1px}
 .manual-input-row{display:none;gap:8px}
 .manual-input-row.visible{display:flex}
 .manual-input-row input{flex:1;height:44px;border-radius:var(--radius-sm);border:0.5px solid #555;background:#222;color:#fff;padding:0 12px;font-size:16px;outline:none;margin:0}
@@ -210,13 +209,6 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     <div class="scan-overlay"><div class="scan-box"></div></div>
     <div class="scan-success-flash" id="scan-flash"></div>
   </div>
-  <div class="pre-scan-btns" id="pre-scan-btns">
-    <button class="skip-btn" id="skip-btn" onclick="skipCamera()">
-      <span class="skip-btn-label">Skip</span>
-      <span class="skip-btn-sub">camera not available to scan</span>
-    </button>
-    <button class="post-scan-list" onclick="closeScanner()">Back to list</button>
-  </div>
   <div class="dup-btns" id="dup-btns">
     <button class="dup-rescan" onclick="rescanCamera()">Re-scan</button>
     <button class="post-scan-list" onclick="saveDuplicate()">Save anyway</button>
@@ -226,6 +218,10 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     <span id="status-debug" style="font-size:11px;opacity:0.6;font-family:monospace;"></span>
   </div>
   <div class="scanner-footer">
+    <div class="pre-scan-btns" id="pre-scan-btns">
+      <button id="skip-btn" onclick="skipCamera()">Skip<span class="skip-btn-sub">camera not available</span></button>
+      <button onclick="closeScanner()">Back to list</button>
+    </div>
     <button class="footer-link" id="manual-toggle-btn" onclick="toggleManual()">Enter key manually instead</button>
     <div class="manual-input-row" id="manual-row">
       <input type="text" id="manual-key" placeholder="Paste URL or XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false">
@@ -237,6 +233,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
+const APP_VERSION = '20260423-1';
 const STORAGE_KEY = 'alta-inventory-session';
 
 let session = null;
@@ -739,21 +736,22 @@ function newBatch() {
 
 async function checkForUpdate() {
   try {
-    const res = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
-    const token = res.headers.get('etag') || res.headers.get('last-modified');
-    if (!token) return;
-    const stored = localStorage.getItem('app-etag');
-    if (stored && stored !== token) {
+    const res = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
+    const text = await res.text();
+    const match = text.match(/APP_VERSION = '([^']+)'/);
+    if (!match) return;
+    const remoteVersion = match[1];
+    if (remoteVersion !== APP_VERSION) {
       const banner = document.createElement('div');
       banner.id = 'update-banner';
-      banner.innerHTML = 'Update available <button onclick="location.reload()">Reload</button>';
+      banner.innerHTML = 'Update available <button onclick="location.replace(location.pathname+\'?r=\'+Date.now())">Reload</button>';
       document.body.prepend(banner);
     }
-    localStorage.setItem('app-etag', token);
   } catch (e) {}
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+localStorage.removeItem('app-etag');
 checkSavedSession();
 checkForUpdate();
 </script>
