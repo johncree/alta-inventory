@@ -191,8 +191,23 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
       <p style="font-size:13px;color:var(--amber);margin-top:2px;">Export will include blank Alta Keys for unscanned or skipped cameras.</p>
     </div>
     <div class="card" id="review-summary"></div>
+    <div class="card" id="review-edit-form" style="display:none;">
+      <label>Site name</label>
+      <input type="text" id="edit-site" autocomplete="off" spellcheck="false">
+      <label>Device group</label>
+      <input type="text" id="edit-group" autocomplete="off" spellcheck="false">
+      <label>Site code</label>
+      <input type="text" id="edit-sitecode" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <label>Total cameras</label>
+      <input type="number" id="edit-count" min="1" style="margin-bottom:0">
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-primary" style="flex:1;height:44px;font-size:14px;" onclick="saveSessionEdits()">Save</button>
+        <button class="btn btn-outline" style="flex:1;height:44px;font-size:14px;margin:0;" onclick="toggleEditForm(false)">Cancel</button>
+      </div>
+    </div>
     <button class="btn btn-success" onclick="downloadCSV()">Download CSV</button>
-    <button class="btn btn-outline" style="margin-top:16px;" onclick="showScreen('screen-scan')">Back to scanning</button>
+    <button class="btn btn-outline" style="margin-top:10px;" onclick="toggleEditForm(true)">Edit session details</button>
+    <button class="btn btn-outline" style="margin-top:8px;" onclick="showScreen('screen-scan')">Back to scanning</button>
     <button class="btn btn-outline" style="margin-top:8px;border-color:var(--red);color:var(--red);" onclick="newBatch()">Start new batch</button>
   </div>
 </div>
@@ -685,6 +700,55 @@ function goToReview() {
     ${skipped ? `<div class="summary-row"><span class="summary-label">Skipped</span><span class="summary-value" style="color:var(--amber)">${skipped}</span></div>` : ''}
     ${(done + skipped) < total ? `<div class="summary-row"><span class="summary-label">Missing</span><span class="summary-value" style="color:var(--red)">${total - done - skipped}</span></div>` : ''}`;
   showScreen('screen-review');
+}
+
+function toggleEditForm(show) {
+  const form = document.getElementById('review-edit-form');
+  if (show) {
+    document.getElementById('edit-site').value     = session.site;
+    document.getElementById('edit-group').value    = session.group;
+    document.getElementById('edit-sitecode').value = session.siteCode;
+    document.getElementById('edit-count').value    = session.cameras.length;
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    form.style.display = 'none';
+  }
+}
+
+function saveSessionEdits() {
+  const site     = document.getElementById('edit-site').value.trim();
+  const group    = document.getElementById('edit-group').value.trim();
+  const siteCode = document.getElementById('edit-sitecode').value.trim().toUpperCase();
+  const newCount = parseInt(document.getElementById('edit-count').value, 10);
+
+  if (!site || !group || !siteCode || !newCount) return;
+
+  const oldCount   = session.cameras.length;
+  const scannedBeyond = session.cameras.slice(newCount).filter(c => c.scanned).length;
+  if (newCount < oldCount && scannedBeyond > 0) {
+    if (!confirm(`Reducing camera count will remove ${scannedBeyond} already-scanned camera(s). Continue?`)) return;
+  }
+
+  session.site     = site;
+  session.group    = group;
+  session.siteCode = siteCode;
+
+  const pad = n => String(n).padStart(2, '0');
+  if (newCount > oldCount) {
+    for (let i = oldCount; i < newCount; i++) {
+      session.cameras.push({ name: `${siteCode}-C${pad(i + 1)}`, altaKey: '', scanned: false, skipped: false });
+    }
+  } else if (newCount < oldCount) {
+    session.cameras = session.cameras.slice(0, newCount);
+  }
+
+  // Rename all cameras to reflect new site code
+  session.cameras.forEach((c, i) => { c.name = `${siteCode}-C${pad(i + 1)}`; });
+
+  saveSession();
+  toggleEditForm(false);
+  goToReview();
 }
 
 function buildCSV() {
