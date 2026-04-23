@@ -588,21 +588,15 @@ function handleScanResult(key) {
   document.getElementById('manual-row').classList.remove('visible');
 }
 
-function skipCamera() {
+async function skipCamera() {
   session.cameras[scanningIndex].skipped  = true;
   session.cameras[scanningIndex].scanned  = false;
   session.cameras[scanningIndex].altaKey  = '';
   saveSession();
-  setStatus('Camera skipped', '');
 
-  nextIndex = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
-  const nextBtn = document.getElementById('post-scan-next');
-  nextBtn.style.display = nextIndex !== -1 ? '' : 'none';
-  document.getElementById('post-scan-btns').classList.add('visible');
-  document.getElementById('manual-toggle-btn').style.display = 'none';
-  document.getElementById('skip-btn').style.display = 'none';
-  document.getElementById('manual-row').classList.remove('visible');
-  scanCooldown = true;
+  const next = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
+  await closeScanner();
+  if (next !== -1) openScanner(next);
 }
 
 async function goNextCamera() {
