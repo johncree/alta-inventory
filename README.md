@@ -2,7 +2,8 @@
 
 A mobile-friendly web app for scanning Avigilon Alta camera boxes on a job site and exporting a CSV ready for Alta Access bulk import.
 
-**Live app:** https://johncree.github.io/alta-inventory/
+**Live app:** https://johncree.github.io/alta-inventory/  
+**Version:** 20260423-6
 
 ---
 
@@ -39,7 +40,7 @@ Each camera gets a sequential name (e.g. `FHS-C01`, `FHS-C02`…). Tap **Scan** 
 Tap **Enter key manually instead** and type or paste the Alta Key (`XXXX-XXXX-XXXX`) or the full URL from the QR code.
 
 #### If a camera isn't available
-Tap **Skip — camera not available to scan**. Skipped cameras are marked in the list and export with a blank Alta Key. You can come back and scan them later.
+Tap **Skip — camera not available to scan**. Skipped cameras are marked in the list and excluded from the CSV export. You can come back and scan them later.
 
 #### Renaming a camera
 Tap the ✏ pencil icon next to any camera name to rename it. Useful when cameras are installed out of sequential order.
@@ -75,7 +76,7 @@ Matches the Alta Access bulk import template exactly:
 | Device Group | Device group name |
 | All others | *(blank — populated by Alta Access after import)* |
 
-Unscanned or skipped cameras are included with a blank Alta Key.
+Only successfully scanned cameras are included. Skipped and unscanned cameras are excluded.
 
 ---
 
