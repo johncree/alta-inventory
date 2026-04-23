@@ -96,16 +96,17 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .scan-success-flash{position:absolute;inset:0;background:rgba(99,153,34,0.4);display:none;pointer-events:none;z-index:10}
 .scanner-status{padding:10px 16px;color:#fff;text-align:center;font-size:13px;background:rgba(0,0,0,0.75);min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;word-break:break-all}
 .scanner-footer{background:rgba(0,0,0,0.8);padding:12px 16px}
-.post-scan-btns{display:none;flex-direction:column;gap:10px;padding:12px 16px;background:rgba(0,0,0,0.8)}
-.post-scan-btns.visible{display:flex}
-.post-scan-btns button{width:100%;height:52px;border-radius:var(--radius-sm);border:none;font-size:16px;font-weight:500;cursor:pointer;letter-spacing:0.01em}
-.post-scan-next{background:var(--blue-mid);color:#fff}
+.dup-btns{display:none;flex-direction:column;gap:10px;padding:12px 16px;background:rgba(0,0,0,0.8)}
+.dup-btns.visible{display:flex}
+.dup-btns button{width:100%;height:52px;border-radius:var(--radius-sm);border:none;font-size:16px;font-weight:500;cursor:pointer;letter-spacing:0.01em}
+.dup-rescan{background:var(--blue-mid);color:#fff}
 .post-scan-list{background:#2a2a2a;color:#fff;border:0.5px solid #444}
 .footer-link{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
 #update-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--amber-light);border-bottom:1px solid var(--amber);color:var(--amber);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;font-weight:500}
 #update-banner button{background:var(--amber);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer}
 .pre-scan-btns{display:flex;gap:8px;margin-bottom:10px}
-.skip-btn{flex:1;border-radius:var(--radius-sm);border:0.5px solid var(--amber);background:transparent;color:var(--amber);cursor:pointer;padding:6px 12px;text-align:center;line-height:1.2}
+.skip-btn{flex:2;border-radius:var(--radius-sm);border:0.5px solid var(--amber);background:transparent;color:var(--amber);cursor:pointer;padding:6px 12px;text-align:center;line-height:1.2}
+.pre-scan-btns .post-scan-list{flex:1}
 .skip-btn-label{font-size:14px;font-weight:500;display:block}
 .skip-btn-sub{font-size:11px;opacity:0.7;display:block;margin-top:1px}
 .manual-input-row{display:none;gap:8px}
@@ -209,9 +210,9 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     <div class="scan-overlay"><div class="scan-box"></div></div>
     <div class="scan-success-flash" id="scan-flash"></div>
   </div>
-  <div class="post-scan-btns" id="post-scan-btns">
-    <button class="post-scan-next" id="post-scan-next" onclick="goNextCamera()">Next camera</button>
-    <button class="post-scan-list" onclick="closeScanner()">Back to list</button>
+  <div class="dup-btns" id="dup-btns">
+    <button class="dup-rescan" onclick="rescanCamera()">Re-scan</button>
+    <button class="post-scan-list" onclick="saveDuplicate()">Save anyway</button>
   </div>
   <div class="scanner-status" id="scanner-status">
     <span id="status-main">Starting camera...</span>
@@ -240,8 +241,9 @@ const STORAGE_KEY = 'alta-inventory-session';
 
 let session = null;
 let scanningIndex = null;
-let nextIndex = null;
 let scanCooldown = false;
+let resumeScan = null;
+let pendingDupKey = null;
 let activeStream = null;
 let videoTrack = null;
 let torchOn = false;
@@ -468,8 +470,8 @@ async function openScanner(index) {
   }
 
   scanningIndex = index;
-  nextIndex = null;
   scanCooldown = false;
+  pendingDupKey = null;
   torchOn = false;
   frameCount = 0;
   videoTrack = null;
@@ -479,7 +481,7 @@ async function openScanner(index) {
   document.getElementById('torch-btn').style.display = 'none';
   document.getElementById('torch-btn').classList.remove('on');
   setStatus('Starting camera...', '');
-  document.getElementById('post-scan-btns').classList.remove('visible');
+  document.getElementById('dup-btns').classList.remove('visible');
   document.getElementById('manual-toggle-btn').style.display = 'block';
   document.getElementById('pre-scan-btns').style.display = 'flex';
   document.getElementById('manual-row').classList.remove('visible');
@@ -533,6 +535,8 @@ function startScanLoop(video) {
   const canvas = document.getElementById('scan-canvas');
   const ctx = canvas.getContext('2d');
 
+  resumeScan = () => { scanCooldown = false; requestAnimationFrame(tick); };
+
   function tick() {
     if (scanCooldown || !activeStream) return;
     frameCount++;
@@ -575,28 +579,46 @@ function startScanLoop(video) {
 function handleScanResult(key) {
   scanCooldown = true;
 
-  // Duplicate key check
   const dupIdx = session.cameras.findIndex((c, i) => i !== scanningIndex && c.altaKey === key);
   if (dupIdx !== -1) {
-    setStatus(`Already assigned to ${session.cameras[dupIdx].name} — saved anyway`, '');
-  } else {
-    setStatus('Captured: ' + key, '');
+    pendingDupKey = key;
+    setStatus(`Duplicate — already assigned to ${session.cameras[dupIdx].name}`, '');
+    document.getElementById('scan-flash').style.display = 'block';
+    document.getElementById('dup-btns').classList.add('visible');
+    document.getElementById('manual-toggle-btn').style.display = 'none';
+    document.getElementById('pre-scan-btns').style.display = 'none';
+    document.getElementById('manual-row').classList.remove('visible');
+    return;
   }
 
-  session.cameras[scanningIndex].altaKey  = key;
-  session.cameras[scanningIndex].scanned  = true;
-  session.cameras[scanningIndex].skipped  = false;
+  saveAndAdvance(key);
+}
+
+async function saveAndAdvance(key) {
+  session.cameras[scanningIndex].altaKey = key;
+  session.cameras[scanningIndex].scanned = true;
+  session.cameras[scanningIndex].skipped = false;
   saveSession();
+  const next = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
+  await closeScanner();
+  if (next !== -1) openScanner(next);
+}
 
-  document.getElementById('scan-flash').style.display = 'block';
+function rescanCamera() {
+  pendingDupKey = null;
+  document.getElementById('dup-btns').classList.remove('visible');
+  document.getElementById('scan-flash').style.display = 'none';
+  document.getElementById('manual-toggle-btn').style.display = 'block';
+  document.getElementById('pre-scan-btns').style.display = 'flex';
+  setStatus('Ready — point at QR code', '');
+  if (resumeScan) resumeScan();
+}
 
-  nextIndex = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
-  const nextBtn = document.getElementById('post-scan-next');
-  nextBtn.style.display = nextIndex !== -1 ? '' : 'none';
-  document.getElementById('post-scan-btns').classList.add('visible');
-  document.getElementById('manual-toggle-btn').style.display = 'none';
-  document.getElementById('pre-scan-btns').style.display = 'none';
-  document.getElementById('manual-row').classList.remove('visible');
+async function saveDuplicate() {
+  const key = pendingDupKey;
+  pendingDupKey = null;
+  document.getElementById('dup-btns').classList.remove('visible');
+  await saveAndAdvance(key);
 }
 
 async function skipCamera() {
@@ -610,11 +632,6 @@ async function skipCamera() {
   if (next !== -1) openScanner(next);
 }
 
-async function goNextCamera() {
-  const idx = nextIndex;
-  await closeScanner();
-  if (idx !== -1) openScanner(idx);
-}
 
 async function closeScanner() {
   document.getElementById('scanner-modal').classList.remove('open');
