@@ -102,6 +102,8 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .post-scan-next{background:var(--blue-mid);color:#fff}
 .post-scan-list{background:#333;color:#fff}
 .footer-link{display:block;text-align:center;font-size:13px;color:#7ab3e8;cursor:pointer;text-decoration:underline;background:none;border:none;width:100%;margin-bottom:8px}
+#update-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--amber-light);border-bottom:1px solid var(--amber);color:var(--amber);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;font-weight:500}
+#update-banner button{background:var(--amber);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer}
 .pre-scan-btns{display:flex;gap:8px;margin-bottom:10px}
 .skip-btn{flex:1;border-radius:var(--radius-sm);border:0.5px solid var(--amber);background:transparent;color:var(--amber);cursor:pointer;padding:6px 12px;text-align:center;line-height:1.2}
 .skip-btn-label{font-size:14px;font-weight:500;display:block}
@@ -716,8 +718,27 @@ function newBatch() {
   showScreen('screen-setup');
 }
 
+// ── Update check ─────────────────────────────────────────────────────────────
+
+async function checkForUpdate() {
+  try {
+    const res = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
+    const token = res.headers.get('etag') || res.headers.get('last-modified');
+    if (!token) return;
+    const stored = localStorage.getItem('app-etag');
+    if (stored && stored !== token) {
+      const banner = document.createElement('div');
+      banner.id = 'update-banner';
+      banner.innerHTML = 'Update available <button onclick="location.reload()">Reload</button>';
+      document.body.prepend(banner);
+    }
+    localStorage.setItem('app-etag', token);
+  } catch (e) {}
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 checkSavedSession();
+checkForUpdate();
 </script>
 </body>
 </html>
