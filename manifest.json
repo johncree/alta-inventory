@@ -1,0 +1,13 @@
+{
+  "name": "Alta Camera Inventory",
+  "short_name": "Alta Inventory",
+  "id": "./",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f4f0",
+  "theme_color": "#185FA5",
+  "icons": [
+    { "src": "icon-alta.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

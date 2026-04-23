@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Alta Inventory">
 <link rel="apple-touch-icon" href="icon-alta.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#185FA5">
 <title>Alta Camera Inventory</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -250,7 +252,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
-const APP_VERSION = '20260423-5';
+const APP_VERSION = '20260423-6';
 const STORAGE_KEY = 'alta-inventory-session';
 
 let session = null;
@@ -821,6 +823,7 @@ localStorage.removeItem('app-etag');
 document.getElementById('app-version-label').textContent = 'v' + APP_VERSION;
 checkSavedSession();
 checkForUpdate();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 </script>
 </body>
 </html>
