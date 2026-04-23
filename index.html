@@ -624,7 +624,7 @@ async function skipCamera() {
   session.cameras[scanningIndex].altaKey  = '';
   saveSession();
 
-  const next = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
+  const next = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned);
   await closeScanner();
   if (next !== -1) openScanner(next);
 }
