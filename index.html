@@ -188,7 +188,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
   <div class="content">
     <div id="review-incomplete-warn" style="display:none;background:var(--amber-light);border:0.5px solid var(--amber);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;">
       <p style="font-size:13px;color:var(--amber);font-weight:500;">Some cameras not yet scanned</p>
-      <p style="font-size:13px;color:var(--amber);margin-top:2px;">Export will include blank Alta Keys for unscanned cameras. Skipped cameras are excluded.</p>
+      <p style="font-size:13px;color:var(--amber);margin-top:2px;">Export will only include successfully scanned cameras. Skipped and unscanned cameras are excluded.</p>
     </div>
     <div class="card" id="review-summary"></div>
     <div class="card" id="review-edit-form" style="display:none;">
@@ -250,7 +250,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
-const APP_VERSION = '20260423-4';
+const APP_VERSION = '20260423-5';
 const STORAGE_KEY = 'alta-inventory-session';
 
 let session = null;
@@ -754,7 +754,7 @@ function saveSessionEdits() {
 function buildCSV() {
   const headers = ['Name','IP Address / Alta Key','Alta Key','Port','Site','Device Group','Configuration Profile','Protocol','Encryption','Connected to','Labels','GPS Coordinates'];
   const escape  = v => `"${String(v).replace(/"/g, '""')}"`;
-  const rows    = session.cameras.filter(c => !c.skipped).map(c =>
+  const rows    = session.cameras.filter(c => c.scanned).map(c =>
     [c.name, '', c.altaKey, '', session.site, session.group, '', '', '', '', '', '']);
   return [headers, ...rows].map(r => r.map(escape).join(',')).join('\r\n');
 }
