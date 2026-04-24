@@ -120,13 +120,6 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 .summary-label{color:var(--text-muted)}
 .summary-value{font-weight:500}
 /* Setup extras */
-.divider{display:flex;align-items:center;gap:10px;margin:16px 0}
-.divider span{font-size:13px;color:var(--text-muted);white-space:nowrap}
-.divider::before,.divider::after{content:'';flex:1;height:0.5px;background:var(--border)}
-.import-area{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:20px 16px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative}
-.import-area:hover{border-color:var(--blue-mid)}
-.import-area p{font-size:14px;color:var(--text-muted);margin-top:4px}
-.import-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .restore-card{background:var(--blue-light);border-color:rgba(55,138,221,0.3);margin-bottom:12px}
 </style>
 </head>
@@ -157,13 +150,6 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     </div>
     <div id="setup-error" style="color:var(--red);font-size:13px;margin-bottom:10px;display:none;padding:0 4px;"></div>
     <button class="btn btn-primary" onclick="startSession()">Start scanning session</button>
-    <div class="divider"><span>or</span></div>
-    <div class="import-area">
-      <input type="file" accept=".csv" onchange="importCSV(this)">
-      <strong style="font-size:15px;">Resume from CSV</strong>
-      <p>Pick a previously exported CSV to continue scanning</p>
-    </div>
-    <div id="import-error" style="color:var(--red);font-size:13px;margin-top:10px;display:none;padding:0 4px;"></div>
   </div>
 </div>
 
@@ -209,7 +195,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
     </div>
     <button class="btn btn-success" onclick="downloadCSV()">Download CSV</button>
     <button class="btn btn-outline" style="margin-top:10px;" onclick="toggleEditForm(true)">Edit session details</button>
-    <button class="btn btn-outline" style="margin-top:8px;" onclick="showScreen('screen-scan')">Back to scanning</button>
+    <button class="btn btn-outline" style="margin-top:8px;" onclick="renderScanScreen();showScreen('screen-scan')">Back to scanning</button>
     <button class="btn btn-outline" style="margin-top:8px;border-color:var(--red);color:var(--red);" onclick="newBatch()">Start new batch</button>
   </div>
 </div>
@@ -252,7 +238,7 @@ input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const ALTA_KEY_RE = /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i;
-const APP_VERSION = '20260423-6';
+const APP_VERSION = '20260423-7';
 const STORAGE_KEY = 'alta-inventory-session';
 
 let session = null;
@@ -343,66 +329,6 @@ function startSession() {
   saveSession();
   renderScanScreen();
   showScreen('screen-scan');
-}
-
-// ── CSV Import ────────────────────────────────────────────────────────────────
-
-function parseCSVRow(line) {
-  const cols = [];
-  let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
-    } else if (ch === ',' && !inQ) {
-      cols.push(cur); cur = '';
-    } else { cur += ch; }
-  }
-  cols.push(cur);
-  return cols;
-}
-
-function importCSV(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const err = document.getElementById('import-error');
-  err.style.display = 'none';
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
-      if (lines.length < 2) throw new Error('CSV appears empty.');
-      const header   = parseCSVRow(lines[0]).map(h => h.trim());
-      const nameIdx  = header.findIndex(h => h === 'Name');
-      const keyIdx   = header.findIndex(h => h === 'Alta Key');
-      const siteIdx  = header.findIndex(h => h === 'Site');
-      const groupIdx = header.findIndex(h => h === 'Device Group');
-      if (nameIdx === -1 || keyIdx === -1) throw new Error('Missing required columns (Name, Alta Key).');
-      const cameras = [];
-      let site = '', group = '';
-      for (let i = 1; i < lines.length; i++) {
-        const cols    = parseCSVRow(lines[i]);
-        const name    = (cols[nameIdx]  || '').trim();
-        const altaKey = (cols[keyIdx]   || '').trim();
-        if (!name) continue;
-        if (siteIdx  !== -1 && !site)  site  = (cols[siteIdx]  || '').trim();
-        if (groupIdx !== -1 && !group) group = (cols[groupIdx] || '').trim();
-        cameras.push({ name, altaKey, scanned: altaKey !== '', skipped: false });
-      }
-      if (!cameras.length) throw new Error('No camera rows found.');
-      const siteCode = cameras[0].name.replace(/-C\d+$/, '');
-      session = { siteCode, site, group, count: cameras.length, cameras };
-      saveSession();
-      renderScanScreen();
-      showScreen('screen-scan');
-    } catch (ex) {
-      err.textContent = 'Import failed: ' + ex.message;
-      err.style.display = 'block';
-    }
-    input.value = '';
-  };
-  reader.readAsText(file);
 }
 
 // ── Scan screen ───────────────────────────────────────────────────────────────
