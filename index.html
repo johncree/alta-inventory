@@ -413,6 +413,10 @@ input:focus{
     <button class="post-scan-list" onclick="saveDuplicate()">Save anyway</button>
     <button class="post-scan-list" onclick="closeScanner()">Back to list</button>
   </div>
+  <div class="dup-btns" id="post-scan-btns">
+    <button id="next-cam-btn" class="dup-rescan" onclick="goNextCamera()">Next camera</button>
+    <button class="post-scan-list" onclick="closeScanner()">Back to list</button>
+  </div>
   <div class="scanner-status" id="scanner-status">
     <span id="status-main">Starting camera...</span>
     <span id="status-debug" style="font-size:11px;opacity:0.55;font-family:'JetBrains Mono',monospace"></span>
@@ -438,6 +442,7 @@ const STORAGE_KEY = 'alta-inventory-session';
 
 let session = null;
 let scanningIndex = null;
+let nextScanIndex = null;
 let scanCooldown = false;
 let resumeScan = null;
 let pendingDupKey = null;
@@ -619,6 +624,7 @@ async function openScanner(index) {
   document.getElementById('torch-btn').classList.remove('on');
   setStatus('Starting camera...', '');
   document.getElementById('dup-btns').classList.remove('visible');
+  document.getElementById('post-scan-btns').classList.remove('visible');
   document.getElementById('manual-toggle-btn').style.display = 'block';
   document.getElementById('pre-scan-btns').style.display = 'flex';
   document.getElementById('manual-row').classList.remove('visible');
@@ -728,15 +734,32 @@ function handleScanResult(key) {
     return;
   }
 
-  saveAndAdvance(key);
+  commitScan(key);
 }
 
-async function saveAndAdvance(key) {
+function commitScan(key) {
   session.cameras[scanningIndex].altaKey = key;
   session.cameras[scanningIndex].scanned = true;
   session.cameras[scanningIndex].skipped = false;
   saveSession();
-  const next = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
+
+  nextScanIndex = session.cameras.findIndex((c, i) => i > scanningIndex && !c.scanned && !c.skipped);
+
+  if (scanLoopId) { cancelAnimationFrame(scanLoopId); scanLoopId = null; }
+
+  const cam = session.cameras[scanningIndex];
+  setStatus(`Saved — ${cam.name}`, key);
+  document.getElementById('scan-flash').style.display = 'block';
+  document.getElementById('pre-scan-btns').style.display = 'none';
+  document.getElementById('manual-toggle-btn').style.display = 'none';
+  document.getElementById('manual-row').classList.remove('visible');
+  document.getElementById('dup-btns').classList.remove('visible');
+  document.getElementById('next-cam-btn').style.display = nextScanIndex !== -1 ? '' : 'none';
+  document.getElementById('post-scan-btns').classList.add('visible');
+}
+
+async function goNextCamera() {
+  const next = nextScanIndex;
   await closeScanner();
   if (next !== -1) openScanner(next);
 }
@@ -751,11 +774,10 @@ function rescanCamera() {
   if (resumeScan) resumeScan();
 }
 
-async function saveDuplicate() {
+function saveDuplicate() {
   const key = pendingDupKey;
   pendingDupKey = null;
-  document.getElementById('dup-btns').classList.remove('visible');
-  await saveAndAdvance(key);
+  commitScan(key);
 }
 
 async function skipCamera() {
@@ -778,6 +800,7 @@ async function closeScanner() {
   }
   if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
   document.getElementById('preview').srcObject = null;
+  document.getElementById('post-scan-btns').classList.remove('visible');
   videoTrack = null;
   torchOn = false;
   frameCount = 0;
